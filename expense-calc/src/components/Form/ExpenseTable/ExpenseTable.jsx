@@ -1,6 +1,7 @@
 import React, { useState,useEffect } from "react";
 import "./ExpenseTable.css";
 import ExpenseSummary from "../ExpenseSummary/ExpenseSummary";
+import axios from "axios";
 
 const ExpenseTable = ({ data }) => {
   const [editableIndex, setEditableIndex] = useState(null);
@@ -9,14 +10,14 @@ const ExpenseTable = ({ data }) => {
 
   useEffect(() => {
     const initialGroupedData = data.reduce((result, entry) => {
-      const { head, tag, amt } = entry;
+      const { head, tag, amount } = entry;
 
 
       if (head) {
         if (!result.heads[head]) {
           result.heads[head] = { head, totalAmount: 0 };
         }
-        result.heads[head].totalAmount += parseFloat(amt);
+        result.heads[head].totalAmount += parseFloat(amount);
       }
 
 
@@ -24,7 +25,7 @@ const ExpenseTable = ({ data }) => {
         if (!result.tags[tag]) {
           result.tags[tag] = { tag, totalAmount: 0 };
         }
-        result.tags[tag].totalAmount += parseFloat(amt);
+        result.tags[tag].totalAmount += parseFloat(amount);
       }
 
       return result;
@@ -38,22 +39,40 @@ const ExpenseTable = ({ data }) => {
     setEditedData({ ...data[index] });
   };
 
-  const handleSaveClick = (index) => {
+  const handleSaveClick = async(index) => {
       
       const newData = [...data];
       newData[index] = editedData;
-      data[index] = editedData;
-
+      //data[index] = editedData;
+      const update={
+        id:newData[index]._id,
+        date:newData[index].date,
+        amount:newData[index].amount,
+        head:newData[index].head,
+        tag:newData[index].tag,
+        note:newData[index].note
+      };
+     // console.log(update);
+      console.log( JSON.stringify(update));
+      await axios.put("http://localhost:4000/expense", update) 
+      .then(function (response) {
+        console.log("Updated...");
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    //console.log("updated",newData);
 
     const updatedGroupedData = newData.reduce((result, entry) => {
-      const { head, tag, amt } = entry;
+      const { head, tag, amount } = entry;
 
 
       if (head) {
         if (!result.heads[head]) {
           result.heads[head] = { head, totalAmount: 0 };
         }
-        result.heads[head].totalAmount += parseFloat(amt);
+        result.heads[head].totalAmount += parseFloat(amount);
       }
 
 
@@ -61,7 +80,7 @@ const ExpenseTable = ({ data }) => {
         if (!result.tags[tag]) {
           result.tags[tag] = { tag, totalAmount: 0 };
         }
-        result.tags[tag].totalAmount += parseFloat(amt);
+        result.tags[tag].totalAmount += parseFloat(amount);
       }
 
       return result;
@@ -71,7 +90,7 @@ const ExpenseTable = ({ data }) => {
     setEditedData(null);
     setEditableIndex(null);
   };
-  console.log(groupedData);
+  //console.log(groupedData);
   const handleInputChange = (event, field) => {
     const { value } = event.target;
     setEditedData((prevData) => ({
@@ -101,7 +120,7 @@ const ExpenseTable = ({ data }) => {
               <td>
                 {editableIndex === index ? (
                   <input
-                    type="date"
+                    type="text"
                     value={editedData.date}
                     onChange={(e) => handleInputChange(e, "date")}
                   />
@@ -113,11 +132,11 @@ const ExpenseTable = ({ data }) => {
                 {editableIndex === index ? (
                   <input
                     type="number"
-                    value={editedData.amt}
-                    onChange={(e) => handleInputChange(e, "amt")}
+                    value={editedData.amount}
+                    onChange={(e) => handleInputChange(e, "amount")}
                   />
                 ) : (
-                  entry.amt
+                  entry.amount
                 )}
               </td>
               <td>

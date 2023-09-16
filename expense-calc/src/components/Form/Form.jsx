@@ -1,21 +1,30 @@
 import React from 'react'
 import './Form.css'
+import axios from 'axios';
 
 const Form = ({onSaveData}) => {
+  
   const handleSubmit=(event)=>{
     event.preventDefault();
 
     const data = new FormData(event.target);
     const obj={
       date:data.get('date'),
-      amt:data.get('amount'),
+      amount:data.get('amount'),
       head:data.get('head'),
       tag:data.get('tag'),
       note:data.get('note')
     }
-    onSaveData(obj);
-    
-    
+    //onSaveData(obj);
+    axios.post("http://localhost:4000/expense",obj)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+    event.target.reset();
   }
   return (
     <>
